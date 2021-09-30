@@ -5,63 +5,48 @@ using UnityEngine.U2D;
 
 public class ChangeShape : MonoBehaviour
 {
+    // Attach this script to the SpriteShapeController GameObject in the final/target shape
 
-    public SpriteShapeController blockSpriteShape;  // temporary clone of sword spriteshape used to set block position of corresponding points
-    public float hammerRadius;                      // Radius of hammer hit around mouse click where points are moved
-    public float hitDistanceMultiplier;             // Proportion of hammer radius that is the maximum distance a point can move when hit
+    public SpriteShapeController startSpriteShape;  // Temporary clone/dummy of this spriteShape used to set start position of corresponding points
 
-    private Spline _swordSpline;        // Spline used for creating sword shape
-    private Spline _blockSpline;        // Spline used to set _swordSpline into block position
-    private Vector3[] _pointTargets;    // Target/destination of each point in _swordSpline
+    private Spline _startSpline;        // Spline used to set _shapeSpline into start position
+    private Spline _shapeSpline;        // Spline of this spriteShapeConrtoller that is actually shaped
+    private Vector3[] _pointTargets;    // Target/destination of each point in _shapeSpline
 
     // Start is called before the first frame update
     void Start()
     {
-        // Get spline components from sword and block SpriteShapeController objects
-        _swordSpline = GetComponent<SpriteShapeController>().spline;
-        _blockSpline = blockSpriteShape.spline;
+        // Get spline components from this SpriteShapeController and start SpriteShapeController
+        _shapeSpline = GetComponent<SpriteShapeController>().spline;
+        _startSpline = startSpriteShape.spline;
 
-        // Set target of each point to its starting position and then move them to block position
-        _pointTargets = new Vector3[_swordSpline.GetPointCount()];
-        for (int i = 0; i < _swordSpline.GetPointCount(); i++)
+        // Set target of each point to its current/shaped position and then move them to start position
+        _pointTargets = new Vector3[_shapeSpline.GetPointCount()];
+        for (int i = 0; i < _shapeSpline.GetPointCount(); i++)
         {
-            _pointTargets[i] = _swordSpline.GetPosition(i);
-            _swordSpline.SetPosition(i, _blockSpline.GetPosition(i));
+            _pointTargets[i] = _shapeSpline.GetPosition(i);
+            _shapeSpline.SetPosition(i, _startSpline.GetPosition(i));
         }
 
-        // Destroy dummy block shape object
-        Destroy(blockSpriteShape.gameObject);
+        // Destroy dummy start shape object
+        Destroy(startSpriteShape.gameObject);
     }
 
-    // Update is called once per frame
-    void Update()
+    // Get number of points making up ChangeShape
+    public int numPoints()
     {
-        /*
-        for (int i = 0; i < _swordSpline.GetPointCount(); i++)
-        {
-            // Move each point towards its destination
-            _swordSpline.SetPosition(i, Vector3.MoveTowards(_swordSpline.GetPosition(i), _pointTargets[i], 0.001f));
-        }
-            */
+        return _shapeSpline.GetPointCount();
     }
 
-    private void OnMouseDown()
+    // Get 2D position of a point
+    public Vector2 getPoint(int i)
     {
-        // Calculate position of mouse click in local space
-        Vector3 mousePosScreen = Input.mousePosition;                           // Location of mouse on screen at time of click
-        Vector3 mousePosWorld = Camera.main.ScreenToWorldPoint(mousePosScreen); // Location of mouse click in world space
-        Vector3 mousePosSword = transform.InverseTransformPoint(mousePosWorld); // Location of mouse click in local space of sword GameObject
+        return _shapeSpline.GetPosition(i);
+    }
 
-        // Move all points near click towards their target
-        for (int i = 0; i < _pointTargets.Length; i++)
-        {
-            float distFromClick = Vector2.Distance(_swordSpline.GetPosition(i), mousePosSword); // Distance between point on sword and mouse click
-
-            // If point is within hammer hit radius, move it towards its target
-            if (distFromClick <= hammerRadius)
-            {
-                _swordSpline.SetPosition(i, Vector3.MoveTowards(_swordSpline.GetPosition(i), _pointTargets[i], (hammerRadius - distFromClick) * hitDistanceMultiplier));
-            }
-        }
+    // Move a point towards its destination by a specified distance
+    public void movePoint(int i, float dist)
+    {
+        _shapeSpline.SetPosition(i, Vector2.MoveTowards(_shapeSpline.GetPosition(i), _pointTargets[i], dist));
     }
 }

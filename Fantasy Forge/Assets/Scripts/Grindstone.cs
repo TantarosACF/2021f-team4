@@ -7,10 +7,12 @@ public class Grindstone : MonoBehaviour
     public GameObject edge;         // Sprite of edge of grinstone, rotated along with grindstone side 
     public RectTransform grindArea; // Region where blade is positioned to be grinded
     public GameObject blade;        // Blade positioned along edge of grindstone using mouse
+    public ChangeShape swordShape;
 
     public float speedCap;      // Maximum rotation speed of grindstone in degrees/second
     public float scrollPower;   // Degrees/second added to speed each scroll
     public float friction;      // Degrees/second lost every second
+    public float grindDist;     // Distance/seconds moved by points when ground at full speed
 
     private float _speed;           // Degrees rotated by grindstone every second
     private float _bladeBoundLeft;  // Left boundary of blade X position in grindArea local space
@@ -24,13 +26,20 @@ public class Grindstone : MonoBehaviour
         // RE-DO THIS USING MEASUREMENT OTHER THAN SCALE (SPRITE BOUNDS, ETC)
         _bladeBoundRight = blade.transform.localScale.x / 2 - grindArea.rect.width / 2;
         _bladeBoundLeft = -_bladeBoundRight;
-    }
+}
 
     // Update is called once per frame
     void Update()
     {
         rotateGrindstone();
         moveBlade();
+
+        // Move/"grind" points when in grind space
+        for (int i = 0; i < swordShape.numPoints(); i++)
+        {
+            swordShape.movePoint(i, (_speed / speedCap) * Time.deltaTime * grindDist);
+        }
+        
     }
 
     // Take mousewheel input, adjust grindstone speed, and rotate accordingly
