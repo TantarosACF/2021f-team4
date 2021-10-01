@@ -6,38 +6,52 @@ public class Grindstone : MonoBehaviour
 {
     public GameObject edge;         // Sprite of edge of grinstone, rotated along with grindstone side 
     public RectTransform grindArea; // Region where blade is positioned to be grinded
-    public GameObject blade;        // Blade positioned along edge of grindstone using mouse
+    //public GameObject blade;        // Blade positioned along edge of grindstone using mouse
     public ChangeShape swordShape;
 
-    public float speedCap;      // Maximum rotation speed of grindstone in degrees/second
-    public float scrollPower;   // Degrees/second added to speed each scroll
-    public float friction;      // Degrees/second lost every second
-    public float grindDist;     // Distance/seconds moved by points when ground at full speed
+    public float speedCap;          // Maximum rotation speed of grindstone in degrees/second
+    public float scrollPower;       // Degrees/second added to speed each scroll
+    public float friction;          // Degrees/second lost every second
+    public float grindDist;         // Distance/seconds moved by points when ground at full speed
+    public float _bladeBoundLeft;   // Left boundary of blade X position in grindArea local space
+    public float _bladeBoundRight;  // Right boundary of "   "
+    public float flipCooldownTime;
 
     private float _speed;           // Degrees rotated by grindstone every second
-    private float _bladeBoundLeft;  // Left boundary of blade X position in grindArea local space
-    private float _bladeBoundRight; // Right boundary of "   "
+    private float _grindBoundX;
+    private float _grindBoundY;
+    private bool  _flipReady;
 
     // Start is called before the first frame update
     void Start()
     {
-        _speed = 0;
-
-        // RE-DO THIS USING MEASUREMENT OTHER THAN SCALE (SPRITE BOUNDS, ETC)
-        _bladeBoundRight = blade.transform.localScale.x / 2 - grindArea.rect.width / 2;
-        _bladeBoundLeft = -_bladeBoundRight;
-}
+        _speed       = 0;
+        _grindBoundX = grindArea.rect.width  / 2;
+        _grindBoundY = grindArea.rect.height / 2;
+        _flipReady   = true;
+    }
 
     // Update is called once per frame
     void Update()
     {
         rotateGrindstone();
         moveBlade();
+        if (Input.GetAxis("Space") > 0 && _flipReady)
+        {
+            swordShape.transform.Rotate(Vector3.forward * 180);
+            StartCoroutine("FlipCooldown");
+        }
 
         // Move/"grind" points when in grind space
         for (int i = 0; i < swordShape.numPoints(); i++)
         {
-            swordShape.movePoint(i, (_speed / speedCap) * Time.deltaTime * grindDist);
+            Vector2 worldPos = swordShape.transform.TransformPoint(swordShape.getPoint(i)); // Position of point in world space
+            Vector2 areaPos = grindArea.transform.InverseTransformPoint(worldPos);          // Position of point in local space of grind area
+
+
+            if (-_grindBoundX < areaPos.x && areaPos.x  < _grindBoundX &&
+                -_grindBoundY < areaPos.y && areaPos.y < _grindBoundY)
+                swordShape.movePoint(i, (_speed / speedCap) * Time.deltaTime * grindDist);
         }
         
     }
@@ -74,9 +88,16 @@ public class Grindstone : MonoBehaviour
         Vector3 mousePosLocal  = grindArea.InverseTransformPoint(mousePosWorld);    // Location of mouse click in local space of grind area
 
         // Move blade to mouse position within bounds
-        blade.transform.position = new Vector3(
-            Mathf.Clamp(mousePosLocal.x, _bladeBoundLeft, _bladeBoundRight), 
-            blade.transform.position.y, 
-            blade.transform.position.z);
+        swordShape.transform.position = new Vector3(
+            Mathf.Clamp(mousePosLocal.x, _bladeBoundLeft, _bladeBoundRight),
+            swordShape.transform.position.y,
+            swordShape.transform.position.z);
+    }
+
+    IEnumerator FlipCooldown()
+    {
+        _flipReady = false;
+        yield return new WaitForSeconds(flipCooldownTime);
+        _flipReady = true;
     }
 }

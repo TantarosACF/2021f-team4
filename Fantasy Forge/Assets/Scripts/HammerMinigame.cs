@@ -24,10 +24,8 @@ public class HammerMinigame : MonoBehaviour
     {
         // Calculate position of mouse click in local space
         Vector3 mousePosScreen = Input.mousePosition;                           // Location of mouse on screen at time of click
-        Vector3 mousePosWorld = Camera.main.ScreenToWorldPoint(mousePosScreen); // Location of mouse click in world space
-        Vector3 mousePosSword = swordShape.transform.InverseTransformPoint(mousePosWorld); // Location of mouse click in local space of sword GameObject
-
-        Debug.Log(mousePosSword);
+        Vector3 mousePosWorld  = Camera.main.ScreenToWorldPoint(mousePosScreen); // Location of mouse click in world space
+        Vector3 mousePosSword  = swordShape.transform.InverseTransformPoint(mousePosWorld); // Location of mouse click in local space of sword GameObject
 
         // Move all points near click towards their target
         for (int i = 0; i < swordShape.numPoints(); i++)
