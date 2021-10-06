@@ -2,12 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Grindstone : MonoBehaviour
+public class GrindMinigame : MonoBehaviour
 {
-    public GameObject edge;         // Sprite of edge of grinstone, rotated along with grindstone side 
-    public RectTransform grindArea; // Region where blade is positioned to be grinded
-    //public GameObject blade;        // Blade positioned along edge of grindstone using mouse
-    public ChangeShape swordShape;
+    public GameObject    grindStone;    // Object to be rotated as visual representation of grindstone speed
+    public RectTransform grindArea;     // Region where blade is positioned to be grinded
+    public ChangeShape   swordShape;    // Object moved against edge of grindstone to be shaped
 
     public float speedCap;          // Maximum rotation speed of grindstone in degrees/second
     public float scrollPower;       // Degrees/second added to speed each scroll
@@ -15,12 +14,12 @@ public class Grindstone : MonoBehaviour
     public float grindDist;         // Distance/seconds moved by points when ground at full speed
     public float _bladeBoundLeft;   // Left boundary of blade X position in grindArea local space
     public float _bladeBoundRight;  // Right boundary of "   "
-    public float flipCooldownTime;
+    public float flipCooldownTime;  // Minimum time allowed between flips in seconds
 
     private float _speed;           // Degrees rotated by grindstone every second
-    private float _grindBoundX;
-    private float _grindBoundY;
-    private bool  _flipReady;
+    private float _grindBoundX;     // Leftmost extent of grind area centered at 0
+    private float _grindBoundY;     // Rightmost "   "
+    private bool  _flipReady;       // Indicates whether or not sufficient cooldown time has passed since last flip
 
     // Start is called before the first frame update
     void Start()
@@ -76,8 +75,8 @@ public class Grindstone : MonoBehaviour
         //Debug.Log(_speed);
 
         // Rotate grindstone & edge
-        transform.Rotate(Vector3.forward * _speed * Time.deltaTime);
-        edge.transform.Rotate(Vector3.forward * _speed * Time.deltaTime);
+        //grindStone.transform.Rotate(Vector3.forward * _speed * Time.deltaTime);
+        grindStone.transform.Rotate(Vector3.up, _speed * Time.deltaTime);
     }
 
     void moveBlade()
