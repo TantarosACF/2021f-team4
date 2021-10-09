@@ -9,6 +9,8 @@ public class CharacterMovement : MonoBehaviour
 
     public Rigidbody2D rb;
 
+    public Animator animator;
+
     Vector2 movement;
 
     // Update is called once per frame
@@ -17,6 +19,10 @@ public class CharacterMovement : MonoBehaviour
         //Input
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
+
+        animator.SetFloat("Horizontal", movement.x);
+        animator.SetFloat("Vertical", movement.y);
+        animator.SetFloat("Speed", movement.sqrMagnitude);
     }
 
     private void FixedUpdate()
